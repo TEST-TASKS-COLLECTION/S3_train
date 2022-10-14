@@ -92,32 +92,49 @@ def get_bucket_items(s3, bucket):
 
 s3 = get_s3()
 # bucket = get_bucket()
-for bucket in s3.buckets.all():
-        print(bucket.name)
-        # print(bucket.key)
-        get_bucket_items(s3, bucket)
-        print()
 
+
+# Copy from old to new file
+# s3.meta.client.copy(copy_source, S3_BUCKET, new_file)
 old_file = 'sam/pdf/temp.pdf'
-new_file = 'mikeyy2/pdf/temp.pdf'
+new_file = 'mikeyy3/pdf/temp.pdf'
 copy_source = {
     'Bucket': S3_BUCKET,
     'Key': old_file
 }
+def copy_key(source, new_key):
+    bucket = get_bucket()
+    bucket.copy(source, new_key)
 
-print(s3.Object(S3_BUCKET, old_file))
-
-# Copy from old to new file
-# s3.meta.client.copy(copy_source, S3_BUCKET, new_file)
-bucket = get_bucket()
-bucket.copy(copy_source, new_file)
+copy_key(copy_source, new_file)
 
 # Delete old file
 del_source = {
     'Bucket': S3_BUCKET,
-    'Key': 'mikeyy/pdf/temp.pdf'
+    'Key': 'mikeyy2/pdf/temp.pdf'
 }
-s3.Object(S3_BUCKET, del_source['Key']).delete()
+
+def del_key(key):
+    s3.Object(S3_BUCKET, key).delete()
+    
+del_key(del_source['Key'])
+
+
+rename_source = {
+    'Bucket': S3_BUCKET,
+    'Key': 'mikeyy3/pdf/temp.pdf'
+}
+
+rename_to = 'ichigo/pdf/temp.pdf'
+def rename_key(rename_source, rename_to):
+    
+    copy_key(rename_source, rename_to)
+    del_key(rename_source['Key'])
+
+
+rename_key(rename_source, rename_to)
+
+
 for bucket in s3.buckets.all():
         print(bucket.name)
         # print(bucket.key)
