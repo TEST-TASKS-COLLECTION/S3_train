@@ -59,11 +59,11 @@ def get_list_from_s3():
     client = get_client()
     print(client)
     try:
-        response = client.list_objects(Bucket=S3_BUCKET, Prefix='original/')
-        # response = client.list_objects(Bucket=S3_BUCKET)
+        response = client.list_objects(Bucket=S3_BUCKET)
+        # response = client.list_objects(Bucket=S3_BUCKET, Prefix='original/') # doesn't work
         original = list()
         processed = list()
-        print(response)
+        print(response['Contents'])
         for object in response["Contents"]:
             original.append(object["Key"].replace("original/",""))
         response = client.list_objects(Bucket=S3_BUCKET, Prefix='processed/')
@@ -73,6 +73,12 @@ def get_list_from_s3():
     except:
         return None
     return [original,processed]
+
+# this works************
+# client = get_client()
+# print(client.list_objects(Bucket=S3_BUCKET))
+
+print(get_list_from_s3())
 
 
 def get_bucket_items(s3, bucket):
