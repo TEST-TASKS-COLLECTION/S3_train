@@ -1,3 +1,4 @@
+from distutils.sysconfig import PREFIX
 import boto3
 from dotenv import load_dotenv
 from loguru import logger
@@ -59,13 +60,13 @@ def get_list_from_s3():
     client = get_client()
     print(client)
     try:
-        response = client.list_objects(Bucket=S3_BUCKET)
+        response = client.list_objects(Bucket=S3_BUCKET, PREFIX="sam/")
         # response = client.list_objects(Bucket=S3_BUCKET, Prefix='original/') # doesn't work
         original = list()
         processed = list()
         print(response['Contents'])
         for object in response["Contents"]:
-            original.append(object["Key"].replace("original/",""))
+            original.append(object["Key"].replace("sam/","mikeyy/"))
         response = client.list_objects(Bucket=S3_BUCKET, Prefix='processed/')
         for object in response["Contents"]:
             processed.append(object["Key"].replace("processed/",""))
@@ -84,7 +85,7 @@ print(get_list_from_s3())
 def get_bucket_items(s3, bucket):
     try:
         for buck_obj in s3.Bucket(bucket.name).objects.all():
-            print(buck_obj)
+            print(buck_obj.key)
         
     except ClientError as e:
         print(f"Error: {e}")
@@ -97,4 +98,39 @@ for bucket in s3.buckets.all():
         get_bucket_items(s3, bucket)
         print()
 
+old_file = 'sam/pdf/temp.pdf'
+new_file = 'mikeyy2/pdf/temp.pdf'
+copy_source = {
+    'Bucket': S3_BUCKET,
+    'Key': old_file
+}
 
+print(s3.Object(S3_BUCKET, old_file))
+
+# Copy from old to new file
+# s3.meta.client.copy(copy_source, S3_BUCKET, new_file)
+bucket = get_bucket()
+bucket.copy(copy_source, new_file)
+
+# Delete old file
+del_source = {
+    'Bucket': S3_BUCKET,
+    'Key': 'mikeyy/pdf/temp.pdf'
+}
+s3.Object(S3_BUCKET, del_source['Key']).delete()
+for bucket in s3.buckets.all():
+        print(bucket.name)
+        # print(bucket.key)
+        get_bucket_items(s3, bucket)
+        print()
+
+# s3.Object(S3_BUCKET, "/mikey/pdf/temp.pdf").copy_from(CopySource=copy_source)
+# s3.Object(S3_BUCKET, "/mikey/pdf/temp.pdf").copy_from(CopySource=f'{old_file}')
+
+# s3 = get_s3()
+# # bucket = get_bucket()
+# for bucket in s3.buckets.all():
+#         print(bucket.name)
+#         # print(bucket.key)
+#         get_bucket_items(s3, bucket)
+#         print()
